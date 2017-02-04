@@ -130,12 +130,27 @@
     group={{ instance_config.plone_group }}
 
 - name: Copy buildout skeleton
-  when: (instance_config.plone_buildout_git_repo is not defined) or not (instance_config.plone_buildout_git_repo)
+  when: ((instance_config.plone_buildout_git_repo is not defined) or not (instance_config.plone_buildout_git_repo) and (instance_config.plone_buildout_directory is not defined or not (instance_config.plone_buildout_directory)))
   copy:
     src=zeocluster/
     dest={{ plone_instance_home }}
     owner={{ instance_config.plone_buildout_user }}
     group={{ instance_config.plone_group }}
+
+- name: Copy custom buildout directory
+  when: instance_config.plone_buildout_directory
+  synchronize:
+    src={{ instance_config.plone_buildout_directory }}
+    dest={{ plone_instance_home }}
+
+- name: Fix permissions
+  when: instance_config.plone_buildout_directory
+  file:
+    path={{ instance_config.plone_buildout_directory }}
+    owner={{ instance_config.plone_buildout_user }}
+    group={{ instance_config.plone_group }}
+    state=directory
+    recurse=yes
 
 - name: Instance directory via git
   when: (instance_config.plone_buildout_git_repo is defined) and (instance_config.plone_buildout_git_repo)
@@ -173,7 +188,7 @@
     mode=0700
 
 - name: Copy buildout template
-  when: not instance_config.plone_buildout_git_repo
+  when: not instance_config.plone_buildout_git_repo and not instance_config.plone_buildout_directory
   template:
     src=buildout.cfg.j2
     dest={{ plone_instance_home }}/buildout.cfg
