@@ -385,7 +385,7 @@
   when: plone_backup_at
   cron:
     name="{{ instance_config.plone_instance_name }} Plone backup"
-    job='cd {{ plone_instance_home }} && bin/backup'
+    job='cd {{ plone_instance_home }} && bin/backup -q'
     user={{ instance_config.plone_daemon_user }}
     minute={{ item.minute }}
     hour={{ item.hour }}
